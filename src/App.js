@@ -1,4 +1,3 @@
-import './App.css';
 import {Container} from "react-bootstrap";
 import InvoiceForm from "./components/InvoiceForm";
 import 'bootstrap/dist/css/bootstrap.min.css';

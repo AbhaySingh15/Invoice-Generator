@@ -1,10 +1,7 @@
-// import {useState} from "react";
-// import {Card, Col, Form, InputGroup, Row} from "react-bootstrap";
-
-
-import React, { useState, useEffect } from 'react';
+import React, {useState} from 'react';
 import { Form, Row, Col, Card, Button, InputGroup } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import InvoiceItem from "./InvoiceItem";
 
 const InvoiceForm = () => {
     const [state, setState] = useState({
@@ -47,6 +44,45 @@ const InvoiceForm = () => {
             [fieldName]: fieldNewValue,
         },);
         console.log(state);
+    };
+
+    const onItemizedItemEdit = (evt) => {
+        const itemEdit = {
+            id: evt.target.id,
+            name: evt.target.name,
+            value: evt.target.value,
+        };
+        let items = state.items.slice();
+        const newItems = items.map((item) => {
+            for (let key in item) {
+                let isThisTheFieldBeingEdited  = key === itemEdit.name;
+                let isThisTheItemBeingEdited = item.id === Number(itemEdit.id);
+                if (isThisTheFieldBeingEdited && isThisTheItemBeingEdited) {
+                    item[key] = itemEdit.value;
+                }
+            }
+            return item;
+        });
+        setState({ ...state, items: newItems });
+        handleCalculateTotal();
+    };
+
+    const handleCalculateTotal = () => {
+        setState(prevState => {
+            console.log(prevState);
+            const items = prevState.items;
+            let subTotal = items.reduce((sum, item) => {
+                return sum + parseFloat(item.price) * parseInt(item.quantity, 10);
+            }, 0);
+
+            const subTotalString = subTotal.toFixed(2);
+
+            const taxAmmount = (subTotal * (prevState.taxRate / 100)).toFixed(2);
+            const discountAmmount = (subTotal * (prevState.discountRate / 100)).toFixed(2);
+            const total = (subTotal - parseFloat(discountAmmount) + parseFloat(taxAmmount)).toFixed(2);
+
+            return { ...prevState, subTotal: subTotalString, taxAmmount, discountAmmount, total };
+        });
     };
 
     const onCurrencyChange = (selectedOption) => {
@@ -95,6 +131,7 @@ const InvoiceForm = () => {
                                 <Form.Control placeholder={"Billing address"} value={state.billFromAddress} type="text" name="billFromAddress" className="my-2" autoComplete="address" onChange={(event) => editField(event)} required="required"/>
                             </Col>
                         </Row>
+                       <InvoiceItem onItemizedItemEdit={onItemizedItemEdit} currency={state.currency} items={state.items}/>
                         <Row className="mt-4 justify-content-end">
                             <Col lg={6}>
                                 <div className="d-flex flex-row align-items-start justify-content-between">
