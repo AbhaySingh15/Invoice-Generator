@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import { Form, Row, Col, Card, Button, InputGroup } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import InvoiceItem from "./InvoiceItem";
+import { v4 as uuidv4 } from 'uuid';
 
 const InvoiceForm = () => {
     const [state, setState] = useState({
@@ -25,7 +26,7 @@ const InvoiceForm = () => {
         discountAmount: '0.00',
         items: [
             {
-                id: 0,
+                id: '0',
                 name: '',
                 description: '',
                 price: '1.00',
@@ -39,10 +40,15 @@ const InvoiceForm = () => {
         let fieldNewValue = event.target.value;
         console.log(fieldName);
         console.log(fieldNewValue);
-        setState({
-            ...state,
-            [fieldName]: fieldNewValue,
-        },);
+        // setState({
+        //     ...state,
+        //     [fieldName]: fieldNewValue,
+        // });
+        setState((prevState)=> {
+           return {...prevState,
+                [fieldName]: fieldNewValue,
+        }});
+        handleCalculateTotal();
         console.log(state);
     };
 
@@ -52,11 +58,15 @@ const InvoiceForm = () => {
             name: evt.target.name,
             value: evt.target.value,
         };
+        console.log(typeof itemEdit.id);
+        console.log(itemEdit.value);
         let items = state.items.slice();
         const newItems = items.map((item) => {
             for (let key in item) {
                 let isThisTheFieldBeingEdited  = key === itemEdit.name;
-                let isThisTheItemBeingEdited = item.id === Number(itemEdit.id);
+                let isThisTheItemBeingEdited = item.id === itemEdit.id;
+                console.log(isThisTheItemBeingEdited ? `item id matched`: ``);
+                console.log(isThisTheFieldBeingEdited ? `item field matched`:``);
                 if (isThisTheFieldBeingEdited && isThisTheItemBeingEdited) {
                     item[key] = itemEdit.value;
                 }
@@ -77,12 +87,32 @@ const InvoiceForm = () => {
 
             const subTotalString = subTotal.toFixed(2);
 
-            const taxAmmount = (subTotal * (prevState.taxRate / 100)).toFixed(2);
-            const discountAmmount = (subTotal * (prevState.discountRate / 100)).toFixed(2);
-            const total = (subTotal - parseFloat(discountAmmount) + parseFloat(taxAmmount)).toFixed(2);
+            const taxAmount = (subTotal * (prevState.taxRate / 100)).toFixed(2);
+            const discountAmount = (subTotal * (prevState.discountRate / 100)).toFixed(2);
+            const total = (subTotal - parseFloat(discountAmount) + parseFloat(taxAmount)).toFixed(2);
 
-            return { ...prevState, subTotal: subTotalString, taxAmmount, discountAmmount, total };
+            return { ...prevState, subTotal: subTotalString, taxAmount, discountAmount, total };
         });
+    };
+    const handleAddEvent = () => {
+        const newItem = {
+            id: uuidv4(), // Use uuid to generate a unique ID
+            name: '',
+            price: '1.00',
+            description: '',
+            quantity: 1,
+        };
+        console.log('Generated id for new item:', newItem.id);
+        setState(prevState => ({
+            ...prevState,
+            items: [...prevState.items, newItem],
+        }));
+    };
+    const handleRowDel = (items) => {
+        const itemsCopy = [...state.items];
+        const index = itemsCopy.indexOf(items);
+        itemsCopy.splice(index, 1);
+        setState({ ...state, items: itemsCopy });
     };
 
     const onCurrencyChange = (selectedOption) => {
@@ -131,7 +161,7 @@ const InvoiceForm = () => {
                                 <Form.Control placeholder={"Billing address"} value={state.billFromAddress} type="text" name="billFromAddress" className="my-2" autoComplete="address" onChange={(event) => editField(event)} required="required"/>
                             </Col>
                         </Row>
-                       <InvoiceItem onItemizedItemEdit={onItemizedItemEdit} currency={state.currency} items={state.items}/>
+                       <InvoiceItem onItemizedItemEdit={onItemizedItemEdit} onRowAdd={handleAddEvent} onRowDel={handleRowDel} currency={state.currency} items={state.items}/>
                         <Row className="mt-4 justify-content-end">
                             <Col lg={6}>
                                 <div className="d-flex flex-row align-items-start justify-content-between">
