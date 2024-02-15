@@ -79,16 +79,16 @@ const InvoiceForm = () => {
 
     const handleCalculateTotal = () => {
         setState(prevState => {
-            console.log(prevState);
-            const items = prevState.items;
-            let subTotal = items.reduce((sum, item) => {
-                return sum + parseFloat(item.price) * parseInt(item.quantity, 10);
-            }, 0);
+            const { items, taxRate, discountRate } = prevState;
 
+            const subTotal = items.reduce((sum, item) => sum + parseFloat(item.price) * parseInt(item.quantity, 10), 0);
             const subTotalString = subTotal.toFixed(2);
 
-            const taxAmount = (subTotal * (prevState.taxRate / 100)).toFixed(2);
-            const discountAmount = (subTotal * (prevState.discountRate / 100)).toFixed(2);
+            const calculateAmount = (rate) => (subTotal * (rate / 100)).toFixed(2);
+
+            const taxAmount = calculateAmount(taxRate);
+            const discountAmount = calculateAmount(discountRate);
+
             const total = (subTotal - parseFloat(discountAmount) + parseFloat(taxAmount)).toFixed(2);
 
             return { ...prevState, subTotal: subTotalString, taxAmount, discountAmount, total };
