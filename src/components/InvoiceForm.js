@@ -40,10 +40,6 @@ const InvoiceForm = () => {
         let fieldNewValue = event.target.value;
         console.log(fieldName);
         console.log(fieldNewValue);
-        // setState({
-        //     ...state,
-        //     [fieldName]: fieldNewValue,
-        // });
         setState((prevState)=> {
            return {...prevState,
                 [fieldName]: fieldNewValue,
@@ -52,28 +48,21 @@ const InvoiceForm = () => {
         console.log(state);
     };
 
-    const onItemizedItemEdit = (evt) => {
-        const itemEdit = {
-            id: evt.target.id,
-            name: evt.target.name,
-            value: evt.target.value,
-        };
-        console.log(typeof itemEdit.id);
-        console.log(itemEdit.value);
-        let items = state.items.slice();
-        const newItems = items.map((item) => {
-            for (let key in item) {
-                let isThisTheFieldBeingEdited  = key === itemEdit.name;
-                let isThisTheItemBeingEdited = item.id === itemEdit.id;
-                console.log(isThisTheItemBeingEdited ? `item id matched`: ``);
-                console.log(isThisTheFieldBeingEdited ? `item field matched`:``);
-                if (isThisTheFieldBeingEdited && isThisTheItemBeingEdited) {
-                    item[key] = itemEdit.value;
-                }
+    const onItemEdit = (evt) => {
+        const { id, name, value } = evt.target;
+        const updatedItems = state.items.map((item) => {
+            if (item.id === id) {
+                return {
+                    ...item,
+                    [name]: value,
+                };
             }
             return item;
         });
-        setState({ ...state, items: newItems });
+        setState((prevState) => ({
+            ...prevState,
+            items: updatedItems,
+        }));
         handleCalculateTotal();
     };
 
@@ -161,7 +150,7 @@ const InvoiceForm = () => {
                                 <Form.Control placeholder={"Billing address"} value={state.billFromAddress} type="text" name="billFromAddress" className="my-2" autoComplete="address" onChange={(event) => editField(event)} required="required"/>
                             </Col>
                         </Row>
-                       <InvoiceItem onItemizedItemEdit={onItemizedItemEdit} onRowAdd={handleAddEvent} onRowDel={handleRowDel} currency={state.currency} items={state.items}/>
+                       <InvoiceItem onItemizedItemEdit={onItemEdit} onRowAdd={handleAddEvent} onRowDel={handleRowDel} currency={state.currency} items={state.items}/>
                         <Row className="mt-4 justify-content-end">
                             <Col lg={6}>
                                 <div className="d-flex flex-row align-items-start justify-content-between">
