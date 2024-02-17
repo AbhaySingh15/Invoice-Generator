@@ -3,6 +3,8 @@ import { Form, Row, Col, Card, Button, InputGroup } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import InvoiceItem from "./InvoiceItem";
 import { v4 as uuidv4 } from 'uuid';
+import InvoiceModal from "./InvoiceModal";
+
 
 const InvoiceForm = () => {
     const [state, setState] = useState({
@@ -107,9 +109,22 @@ const InvoiceForm = () => {
     const onCurrencyChange = (selectedOption) => {
         setState({ ...state, ...selectedOption });
     };
+    const openModal = (event) => {
+        event.preventDefault()
+        handleCalculateTotal()
+        // setState({isOpen: true})
+        setState((prevState)=> {
+            return {...prevState,isOpen: true};
+        });
+    };
 
+   const closeModal = (event) => {
+       setState((prevState)=> {
+           return {...prevState,isOpen: false};
+       });
+   };
     return (
-        <Form>
+        <Form onSubmit={openModal}>
             <Row>
                 <Col md={8} lg={9}>
                     <Card className="p-4 p-xl-5 my-3 my-xl-4">
@@ -193,6 +208,7 @@ const InvoiceForm = () => {
                 <Col md={4} lg={3}>
                     <div className="sticky-top pt-md-3 pt-xl-4">
                         <Button variant="primary" type="submit" className="d-block w-100">Review Invoice</Button>
+                        <InvoiceModal showModal={state.isOpen} closeModal={closeModal} info={state} items={state.items} currency={state.currency} subTotal={state.subTotal} taxAmmount={state.taxAmount} discountAmmount={state.discountAmount} total={state.total}/>
                         <Form.Group className="mb-3">
                             <Form.Label className="fw-bold">Currency:</Form.Label>
                             <Form.Select onChange={event => onCurrencyChange({currency: event.target.value})} className="btn btn-light my-1" aria-label="Change Currency">
